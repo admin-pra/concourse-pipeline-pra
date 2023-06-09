@@ -1,0 +1,41 @@
+---
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+
+jobs:
+  - name: job-pass-files
+    public: true
+    plan:
+      - get: concourse-pipelines
+      - task: create-some-files
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: busybox}
+
+          inputs:
+            - name: concourse-pipelines
+          outputs:
+            - name: some-files
+
+          run:
+            path: concourse-pipelines/0111-inputs-and-outputs-pipeline/create_some_files.sh
+
+      - task: show-some-files
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: busybox}
+
+          inputs:
+            - name: concourse-pipelines
+            - name: some-files
+
+          run:
+            path: concourse-pipelines/0111-inputs-and-outputs-pipeline/show_files.sh

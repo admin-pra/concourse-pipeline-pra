@@ -1,0 +1,77 @@
+groups:
+  - name: build
+    jobs: [build]
+
+  - name: semver
+    jobs: [major, minor, patch]
+
+display:
+  background_image: https://thebrandhopper.com/wp-content/uploads/2023/03/marvel-title.jpg
+#  background_image: https://avatars1.githubusercontent.com/u/7809479?s=400&v=4
+
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+      branch: main
+
+  - name: repo-main
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/kushalgangan/concourse-demo
+      branch: main
+      username: ((git_username))
+      password: ((git_password))
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: https://github.com/kushalgangan/concourse-demo
+      branch: main
+      initial_version: 1.0.0
+      file: version
+      username: ((git_username))
+      password: ((git_password))
+
+jobs:
+  - name: build
+    plan:
+      - get: concourse-pipelines
+      - get: repo-main
+      - get: version
+      - task: hello-world
+        file: concourse-pipelines/tasks/hello-world.yml
+      - put: version
+        params: { file: version/version }
+
+  - name: major
+    serial_groups: [version]
+    plan:
+      - get: version
+        passed: [build]
+        params: {bump: major}
+      - put: version
+        params: {file: version/version}
+
+  - name: minor
+    serial_groups: [version]
+    plan:
+      - get: version
+        passed: [build]
+        params: {bump: minor}
+      - put: version
+        params: {file: version/version}
+
+  - name: patch
+    serial_groups: [version]
+    plan:
+      - get: version
+        passed: [build]
+        params: {bump: patch}
+        trigger: true
+      - put: version
+        params: {file: version/version}

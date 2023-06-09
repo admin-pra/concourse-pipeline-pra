@@ -1,0 +1,17 @@
+---
+resources:
+  - name: every-30s
+    type: time
+    icon: clock-outline
+    check_every: 30s
+    source:
+      interval: 30s
+
+jobs:
+  - name: job
+    public: true
+    plan:
+      - get: every-30s
+        trigger: true
+      - task: simple-task
+        file: concourse-pipelines/tasks/hello-world.yml

@@ -1,0 +1,15 @@
+---
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+
+jobs:
+  - name: job
+    public: true
+    plan:
+      - get: concourse-pipelines
+      - task: hello-world-task
+        file: concourse-pipelines/tasks/hello-world.yml

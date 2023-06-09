@@ -1,0 +1,51 @@
+---
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+      branch: main
+  - name: golang-mock
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/golang/mock.git
+      branch: main
+
+jobs:
+  - name: job-contents
+    public: true
+    serial: true
+    plan:
+      - in_parallel:
+          limit: 2
+          fail_fast: false
+          steps:
+          - get: concourse-pipelines
+            trigger: true
+          - get: golang-mock
+      - in_parallel:
+          steps:
+          - task: get-concourse-pipelines-content
+            config:
+              inputs:
+                - name: concourse-pipelines
+              platform: linux
+              image_resource:
+                type: registry-image
+                source: { repository: busybox }
+              run:
+                path: ls
+                args: [ "-la", "./concourse-pipelines" ]
+          - task: get-golang-mock-content
+            config:
+              inputs:
+                - name: golang-mock
+              platform: linux
+              image_resource:
+                type: registry-image
+                source: { repository: busybox }
+              run:
+                path: ls
+                args: [ "-la", "./golang-mock" ]

@@ -1,0 +1,47 @@
+resources:
+  - name: repo-main
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/kushalgangan/concourse-demo
+      branch: main
+      username: ((git_username))
+      password: ((git_password))
+
+jobs:
+  - name: create-a-commit
+    plan:
+      - get: repo-main
+      - task: commit-and-tag
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: gitea/gitea # use any image that has the git cli
+          inputs:
+            - name: repo-main
+          outputs:
+            # to pass the commit to the following steps specify
+            # the "repo-main" as an output as well
+            - name: repo-main
+          run:
+            path: sh
+            args:
+              - -cx
+              # this is just a bash script
+              - |
+                cd repo-main
+                # edit a file / make a change
+                today=$(date +%Y-%m-%d)
+                echo ${today} > todays-date
+                git config --global user.email "demo@concourse-ci.org"
+                git config --global user.name "demo"
+                git add ./todays-date
+                git commit -m "Add todays date"
+                git tag v0.1.1
+      # push commit and tag
+      - put: repo-main
+        params:
+          # specify the "repo-main" artifact as the location
+          repository: repo-main

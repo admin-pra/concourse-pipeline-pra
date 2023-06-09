@@ -1,0 +1,39 @@
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+      branch: main
+
+  - name: repo-main
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/kushalgangan/concourse-demo
+      branch: main
+      username: ((git_username))
+      password: ((git_password))
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: https://github.com/kushalgangan/concourse-demo
+      branch: main
+      initial_version: 1.0.0
+      file: version
+      username: ((git_username))
+      password: ((git_password))
+
+jobs:
+  - name: build
+    plan:
+      - get: concourse-pipelines
+      - get: repo-main
+      - get: version
+        params: { bump: minor }
+      - task: hello-world
+        file: concourse-pipelines/tasks/hello-world.yml
+      - put: version
+        params: { file: version/version }

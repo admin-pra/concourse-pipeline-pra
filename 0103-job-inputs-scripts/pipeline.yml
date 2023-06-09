@@ -1,0 +1,23 @@
+---
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+
+  - name: resource-app
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/cloudfoundry-community/simple-go-web-app.git
+
+jobs:
+  - name: job-test-app
+    public: true
+    plan:
+      - get: concourse-pipelines
+      - get: resource-app
+        trigger: true
+      - task: web-app-tests
+        file: concourse-pipelines/0103-job-inputs-scripts/task_run_tests.yml

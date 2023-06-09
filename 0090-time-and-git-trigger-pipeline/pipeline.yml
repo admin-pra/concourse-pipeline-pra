@@ -1,0 +1,26 @@
+---
+resources:
+  - name: concourse-pipelines
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/devops-kg/concourse-pipelines.git
+      branch: main
+
+  - name: my-timer
+    type: time
+    icon: clock-outline
+    source:
+      interval: 5m
+
+jobs:
+  - name: job-hello-world
+    public: true
+    serial: true
+    plan:
+      - get: concourse-pipelines
+#        trigger: true
+      - get: my-timer
+        trigger: true
+      - task: hello-world
+        file: concourse-pipelines/tasks/hello-world.yml

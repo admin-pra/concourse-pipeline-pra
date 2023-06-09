@@ -1,0 +1,38 @@
+jobs:
+  - name: test
+    plan:
+      - get: git-repo
+        trigger: true
+      - config:
+          caches:
+            - path: $HOME/.m2/repository
+            - path: $HOME/.gradle/caches/
+            - path: $HOME/.gradle/wrapper/
+          container_limits: {}
+          image_resource:
+            name: ""
+            source:
+              repository: gradle
+              tag: jdk8-slim
+            type: registry-image
+          inputs:
+            - name: git-repo
+          platform: linux
+          run:
+            args:
+              - -xec
+              - |
+                cd git-repo
+                ./gradlew tasks --all
+                ./gradlew clean build
+            path: /bin/sh
+            user: root
+        task: run-tests
+    public: true
+
+resources:
+  - icon: github
+    name: git-repo
+    source:
+      uri: https://github.com/jabedhasan21/java-hello-world-with-gradle.git
+    type: git
